@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service
 @Service
 class SykmeldingConsumer(
     private val kafkaConfigProperties: KafkaConfigProperties,
-    //private val kafkaTemplate: KafkaTemplate<String, SykmeldingMedUtfall>,
+    private val kafkaTemplate: KafkaTemplate<String, SykmeldingMedBehandlingsutfall>,
     private val sykmeldingService: SykmeldingService,
 ) {
     private val logger = LoggerFactory.getLogger(SykmeldingConsumer::class.java)
@@ -29,24 +29,27 @@ class SykmeldingConsumer(
         try {
             if (cr != null) {
                 val sykmelding = objectMapper.readValue(cr.value(), SykmeldingMedBehandlingsutfall::class.java)
+                // if (cr.headers())
                 logger.info("Received message from topic: ${cr.value()}")
                 runBlocking {
                     sykmeldingService.saveSykmelding(sykmelding)
                 }
-            }
 
+                kafkaTemplate.send(
+                    kafkaConfigProperties.topics.mottattSykmelding,
+                    SykmeldingMedBehandlingsutfall(
+                        sykmelding = sykmelding.sykmelding,
+                        validation = sykmelding.validation,
+                        kilde = sykmelding.kilde
+                    )
+                )
+            }
         } catch (e: Throwable) {
             logger.error("Kunne ikke lese melding fra topic ", e)
             throw e
+        } catch (ex: Exception) {
+            logger.error("Failed to publish sykmelding to tsm.sykmelding", ex)
         }
-
-        // her skal videre funksjonalitet ligge
-        /* try {
-             kafkaTemplate.send("tsm.sykmelding", SykmeldingMedUtfall(sykmeldingInput = sykmelding.sykmeldingInput, utfall = sykmelding.utfall))
-         } catch (ex: Exception) {
-             logger.error("Failed to publish sykmelding to tsm.sykmelding", ex)
-         }*/
-
     }
 }
 
