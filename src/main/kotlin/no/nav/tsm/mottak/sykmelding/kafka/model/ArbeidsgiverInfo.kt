@@ -1,12 +1,24 @@
 package no.nav.tsm.mottak.sykmelding.kafka.model
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id
+import no.nav.tsm.mottak.sykmelding.kafka.model.ARBEIDSGIVER_TYPE.*
 import java.time.LocalDate
 
 enum class ARBEIDSGIVER_TYPE {
     EN_ARBEIDSGIVER, FLERE_ARBEIDSGIVERE, INGEN_ARBEIDSGIVER,
 }
 
-sealed interface ArbeidsgiverInfo{
+@JsonSubTypes(
+    Type(EnArbeidsgiver::class, name = "EN_ARBEIDSGIVER"),
+    Type(FlereArbeidsgivere::class, name = "FLERE_ARBEIDSGIVERE"),
+    Type(IngenArbeidsgiver::class, name = "INGEN_ARBEIDSGIVER"),
+)
+@JsonTypeInfo(use = Id.NAME, include = PROPERTY, property = "type")
+sealed interface ArbeidsgiverInfo {
     val type: ARBEIDSGIVER_TYPE
 }
 
@@ -14,7 +26,7 @@ data class EnArbeidsgiver(
     val meldingTilArbeidsgiver: String?,
     val tiltakArbeidsplassen: String?,
 ) : ArbeidsgiverInfo {
-    override val type: ARBEIDSGIVER_TYPE = ARBEIDSGIVER_TYPE.EN_ARBEIDSGIVER
+    override val type: ARBEIDSGIVER_TYPE = EN_ARBEIDSGIVER
 }
 
 data class FlereArbeidsgivere(
@@ -24,11 +36,11 @@ data class FlereArbeidsgivere(
     val meldingTilArbeidsgiver: String?,
     val tiltakArbeidsplassen: String?
 ) : ArbeidsgiverInfo {
-    override val type: ARBEIDSGIVER_TYPE = ARBEIDSGIVER_TYPE.FLERE_ARBEIDSGIVERE
+    override val type: ARBEIDSGIVER_TYPE = FLERE_ARBEIDSGIVERE
 }
 
-class IngenArbeidsgiver() : ArbeidsgiverInfo {
-    override val type: ARBEIDSGIVER_TYPE = ARBEIDSGIVER_TYPE.INGEN_ARBEIDSGIVER
+class IngenArbeidsgiver : ArbeidsgiverInfo {
+    override val type: ARBEIDSGIVER_TYPE = INGEN_ARBEIDSGIVER
     override fun equals(other: Any?) = other is IngenArbeidsgiver
     override fun hashCode() = type.hashCode()
     override fun toString() = "IngenArbeidsgiver(type=$type)"
@@ -38,6 +50,11 @@ enum class IArbeidType {
     ER_I_ARBEID, ER_IKKE_I_ARBEID,
 }
 
+@JsonSubTypes(
+    Type(ErIArbeid::class, name = "ER_I_ARBEID"),
+    Type(ErIkkeIArbeid::class, name = "ER_IKKE_I_ARBEID"),
+)
+@JsonTypeInfo(use = Id.NAME, include = PROPERTY, property = "type")
 sealed interface IArbeid {
     val type: IArbeidType
     val vurderingsdato: LocalDate?

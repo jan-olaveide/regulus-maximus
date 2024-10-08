@@ -8,9 +8,11 @@ data class SykmeldingMedBehandlingsutfall(
     val validation: ValidationResult,
     val kilde: SykmeldingKilde,
 )
+
 enum class SykmeldingKilde {
     ELEKTRONISK, PAPIR, UTENLANDSK_PAPIR, UTENLANDS_NAV_NO, UTENLANDS_RINA
 }
+
 data class Sykmelding(
     val id: String,
     val metadata: SykmeldingMetadata,
@@ -43,7 +45,6 @@ data class Navn(
 data class Person(
     val ident: String, val navn: Navn?
 )
-
 
 data class Adresse(
     val gateAdresse: String?,
@@ -83,6 +84,7 @@ data class Tilbakedatering(
     val kontaktDato: LocalDate?,
     val begrunnelse: String?,
 )
+
 data class AvsenderSystem(val navn: String, val versjon: String)
 
 

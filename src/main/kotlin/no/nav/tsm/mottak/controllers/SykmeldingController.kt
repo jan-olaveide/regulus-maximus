@@ -1,26 +1,29 @@
 package no.nav.tsm.mottak.controllers
 
-import no.nav.tsm.mottak.service.SykmeldingService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 import no.nav.tsm.mottak.controllers.model.sykmeldingMedBehandlingsutfall
+import no.nav.tsm.mottak.service.SykmeldingService
 import no.nav.tsm.mottak.sykmelding.kafka.model.SykmeldingMedBehandlingsutfall
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.web.bind.annotation.*
-import kotlin.collections.List
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RestController
+import java.util.*
 
 @Profile("local")
 @RestController
 class SykmeldingController(
-    private val kafkaTemplate: KafkaTemplate<String, SykmeldingMedBehandlingsutfall>,
+    private val kafkaTemplate: KafkaTemplate<UUID, SykmeldingMedBehandlingsutfall>,
     private val sykmeldingService: SykmeldingService,
 ) {
 
     private val topic = "tsm.mottak-sykmelding"
     private val logger = LoggerFactory.getLogger(SykmeldingController::class.java)
-
 
     @GetMapping("/")
     suspend fun indexPage(): String {
@@ -114,15 +117,17 @@ class SykmeldingController(
 
     @PostMapping("/htmx/post-sykmelding")
     suspend fun postSykmelding(): String {
-        val sykmeldingId = sykmeldingMedBehandlingsutfall.sykmelding.id
-        logger.info("Sending sykmelding med id... ${sykmeldingId} ")
+        val sykmeldingId = UUID.randomUUID()
+        logger.info("Sending sykmelding med id... $sykmeldingId ")
+        val m = sykmeldingMedBehandlingsutfall(sykmeldingId)
 
-
-        kafkaTemplate.send(topic, sykmeldingId, sykmeldingMedBehandlingsutfall).get()
+        withContext(Dispatchers.IO) {
+            kafkaTemplate.send(topic, sykmeldingId, m)
+        }
         return """
             <div>
                 <p>Sykmelding ID: ${sykmeldingId}</p>
-                <p>Utfall: ${sykmeldingMedBehandlingsutfall.validation.status}</p>
+                <p>Utfall: ${m.validation.status}</p>
                 <br/>
             </div>
             """.trimIndent()

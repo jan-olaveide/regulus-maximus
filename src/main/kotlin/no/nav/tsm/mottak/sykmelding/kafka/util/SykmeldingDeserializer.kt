@@ -14,8 +14,9 @@ class SykmeldingDeserializer<T : Any>(private val type: KClass<T>) : Deserialize
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
     }
+
     override fun deserialize(topic: String, p1: ByteArray): T {
-       return objectMapper.readValue(p1, type.java)
+        return objectMapper.readValue(p1, type.java)
     }
 }
 

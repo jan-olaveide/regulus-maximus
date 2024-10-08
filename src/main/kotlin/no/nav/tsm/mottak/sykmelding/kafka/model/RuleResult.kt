@@ -2,7 +2,6 @@ package no.nav.tsm.mottak.sykmelding.kafka.model
 
 import java.time.OffsetDateTime
 
-
 data class ValidationResult(
     val status: RuleType,
     val timestamp: OffsetDateTime,
@@ -47,7 +46,7 @@ data class PendingRule(
     override val name: String,
     val timestamp: OffsetDateTime,
     override val description: String,
-    ) : Rule {
+) : Rule {
     override val validationType = ValidationType.MANUAL
     override val type = RuleType.PENDING
 }

@@ -5,9 +5,9 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-val sykmeldingMedBehandlingsutfall = SykmeldingMedBehandlingsutfall(
+fun sykmeldingMedBehandlingsutfall(uuid: UUID = UUID.randomUUID()) = SykmeldingMedBehandlingsutfall(
     sykmelding = Sykmelding(
-        id = UUID.randomUUID().toString(),
+        id = uuid.toString(),
         metadata = SykmeldingMetadata(
             msgId = null,
             regelsettVersjon = "1",
@@ -24,14 +24,24 @@ val sykmeldingMedBehandlingsutfall = SykmeldingMedBehandlingsutfall(
             kontaktInfo = emptyList()
         ),
         arbeidsgiver = EnArbeidsgiver(null, null),
-        medisinskVurdering = MedisinskVurdering(hovedDiagnose = null, biDiagnoser = null, svangerskap = false, yrkesskade = false, yrkesskadeDato = null, skjermetForPasient = false, syketilfelletStartDato = null, annenFraversArsak = null),
+        medisinskVurdering = MedisinskVurdering(hovedDiagnose = null,
+            biDiagnoser = null,
+            svangerskap = false,
+            yrkesskade = false,
+            yrkesskadeDato = null,
+            skjermetForPasient = false,
+            syketilfelletStartDato = null,
+            annenFraversArsak = null),
         prognose = Prognose(arbeidsforEtterPeriode = false, null, null),
         tiltak = null,
         bistandNav = null,
         tilbakedatering = null,
-        aktivitet = listOf(AktivitetIkkeMulig(medisinskArsak = MedisinskArsak(null, MedisinskArsakType.ANNET), null, fom = 1.januar(2023), tom = 31.januar(2023))),
+        aktivitet = listOf(AktivitetIkkeMulig(medisinskArsak = MedisinskArsak(null, MedisinskArsakType.ANNET),
+            null,
+            fom = 1.januar(2023),
+            tom = 31.januar(2023))),
         utdypendeOpplysninger = emptyMap()
-        ),
+    ),
     validation = ValidationResult(
         status = RuleType.OK,
         timestamp = OffsetDateTime.now(),

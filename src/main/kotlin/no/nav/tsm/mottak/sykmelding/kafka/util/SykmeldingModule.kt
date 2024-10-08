@@ -6,17 +6,19 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.node.ObjectNode
 import no.nav.tsm.mottak.sykmelding.kafka.model.*
+import org.springframework.stereotype.Component
 import kotlin.reflect.KClass
 
+@Component
 class SykmeldingModule : SimpleModule() {
-    init {
+
+    override fun setupModule(context: SetupContext) {
         addDeserializer(Aktivitet::class.java, AktivitetDeserializer())
         addDeserializer(ArbeidsgiverInfo::class.java, ArbeidsgiverInfoDeserializer())
         addDeserializer(IArbeid::class.java, IArbeidDeserializer())
         addDeserializer(Rule::class.java, RuleDeserializer())
     }
 }
-
 
 abstract class CustomDeserializer<T : Any> : JsonDeserializer<T>() {
     abstract fun getClass(type: String): KClass<out T>
@@ -48,7 +50,6 @@ class IArbeidDeserializer : CustomDeserializer<IArbeid>() {
         }
     }
 }
-
 
 class ArbeidsgiverInfoDeserializer : CustomDeserializer<ArbeidsgiverInfo>() {
     override fun getClass(type: String): KClass<out ArbeidsgiverInfo> {

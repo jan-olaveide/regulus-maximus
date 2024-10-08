@@ -25,7 +25,8 @@ enum class AnnenFravarArsakType {
 }
 
 data class AnnenFraverArsak(
-    val beskrivelse: String?, val arsak: AnnenFravarArsakType // TODO: Sjekk om det bare er en av disse som kan være satt
+    val beskrivelse: String?,
+    val arsak: AnnenFravarArsakType // TODO: Sjekk om det bare er en av disse som kan være satt
 )
 
 data class MedisinskArsak(

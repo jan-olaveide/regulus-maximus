@@ -5,40 +5,25 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import kotlinx.coroutines.runBlocking
-import no.nav.tsm.mottak.config.KafkaConfigProperties
 import no.nav.tsm.mottak.service.SykmeldingService
 import no.nav.tsm.mottak.sykmelding.kafka.model.SykmeldingMedBehandlingsutfall
 import no.nav.tsm.mottak.sykmelding.kafka.util.SykmeldingModule
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
-import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 
 @Service
 class SykmeldingConsumer(
-    private val kafkaConfigProperties: KafkaConfigProperties,
-    //private val kafkaTemplate: KafkaTemplate<String, SykmeldingMedUtfall>,
-    private val sykmeldingService: SykmeldingService,
-) {
-    private val logger = LoggerFactory.getLogger(SykmeldingConsumer::class.java)
+    // private val kafkaTemplate: KafkaTemplate<String, SykmeldingMedUtfall>,
+    private val sykmeldingService: SykmeldingService) {
+    private val log = LoggerFactory.getLogger(SykmeldingConsumer::class.java)
 
-    @KafkaListener(topics = ["\${spring.kafka.topics.mottatt-sykmelding}"], groupId = "\${spring.kafka.group-id}")
-    fun consume(cr: ConsumerRecord<String, String>?) {
-        try {
-            if (cr != null) {
-                val sykmelding = objectMapper.readValue(cr.value(), SykmeldingMedBehandlingsutfall::class.java)
-                logger.info("Received message from topic: ${cr.value()}")
-                runBlocking {
-                    sykmeldingService.saveSykmelding(sykmelding)
-                }
-            }
-
-        } catch (e: Throwable) {
-            logger.error("Kunne ikke lese melding fra topic ", e)
-            throw e
-        }
+    @KafkaListener(topics = ["\${topics.mottatt-sykmelding}"],
+        groupId = "\${spring.kafka.group-id}",
+        containerFactory = "containerFactory")
+    suspend fun consume(sykmelding: SykmeldingMedBehandlingsutfall) {
+        log.info("Mottok sykmelding $sykmelding")
+        sykmeldingService.saveSykmelding(sykmelding)
 
         // her skal videre funksjonalitet ligge
         /* try {
@@ -49,7 +34,6 @@ class SykmeldingConsumer(
 
     }
 }
-
 
 val objectMapper: ObjectMapper =
     ObjectMapper().apply {
